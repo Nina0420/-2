@@ -24,7 +24,6 @@ from yaml import load as load_yaml, Loader
 
 
 class RegisterAccount(APIView):
-    # Регистрация методом POST
     def post(self, *args, request, **kwargs):
         if {'first_name', 'last_name', 'email', 'password', 'company', 'position'}.issubset(request.data):
             errors = {}
@@ -33,7 +32,6 @@ class RegisterAccount(APIView):
                 validate_password(request.data['password'])
             except Exception as password_error:
                 error_array = []
-                # noinspection PyTypeChecker
                 for item in password_error:
                     error_array.append(item)
                 return JsonResponse({'Status': False, 'Errors': {'password': error_array}})
@@ -95,8 +93,6 @@ class AccountDetails(APIView):
                 request.user.set_password(request.data['password'])
 
 class LoginAccount(APIView):
-
-    # Авторизация методом POST
     def post(self, *args, request, **kwargs):
 
         if {'email', 'password'}.issubset(request.data):
@@ -147,8 +143,6 @@ class ProductInfoView(APIView):
 
 
 class BasketView(APIView):
-
-    # получить корзину
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
@@ -160,8 +154,6 @@ class BasketView(APIView):
 
         serializer = OrderSerializer(basket, many=True)
         return Response(serializer.data)
-
-    # редактировать корзину
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return JsonResponse({'Status': False, 'Error': 'Log in required'}, status=403)
@@ -280,8 +272,6 @@ class PartnerUpdate(APIView):
                 return JsonResponse({'Status': True})
 
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
-
-
 class PartnerOrders(APIView):
 
     def get(self, request, *args, **kwargs):
@@ -299,8 +289,6 @@ class PartnerOrders(APIView):
 
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
-
-
 class ContactView(APIView):
 
     def get(self, *args, request, **kwargs):

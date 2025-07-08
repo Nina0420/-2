@@ -102,9 +102,6 @@ class Shop(models.Model):
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
     state = models.BooleanField(verbose_name='статус получения заказов',
-                                default=True)
-
-    # filename
 
     class Meta:
         verbose_name = 'Магазин'
@@ -136,7 +133,6 @@ class Product(models.Model):
                                  related_name='products',
                                  blank=True,
                                  on_delete=models.CASCADE)
-
     class Meta:
         verbose_name = 'Продукт'
         verbose_name_plural = "Список продуктов"
@@ -144,8 +140,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-
-
 class ProductInfo(models.Model):
     model = models.CharField(max_length=80,
                              verbose_name='Модель',
@@ -170,7 +164,6 @@ class ProductInfo(models.Model):
                 fields=['product', 'shop', 'external_id'], name='unique_product_info'),
         ]
 
-
 class Parameter(models.Model):
     name = models.CharField(
         max_length=40, verbose_name='Название')
@@ -182,8 +175,6 @@ class Parameter(models.Model):
 
     def __str__(self):
         return self.name
-
-
 class ProductParameter(models.Model):
     product_info = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте',
                                      related_name='product_parameters', blank=True,
@@ -225,7 +216,6 @@ class Contact(models.Model):
     def __str__(self):
         return f'{self.city} {self.street} {self.house}'
 
-
 class Order(models.Model):
     user = models.ForeignKey(User, verbose_name='Пользователь',
                              related_name='orders', blank=True,
@@ -266,8 +256,6 @@ class OrderItem(models.Model):
             models.UniqueConstraint(fields=['order_id', 'product_info'],
                                     name='unique_order_item'),
         ]
-
-
 class ConfirmEmailToken(models.Model):
     class Meta:
         verbose_name = 'Токен подтверждения Email'
