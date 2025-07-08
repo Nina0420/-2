@@ -16,16 +16,11 @@ new_order = Signal(
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance=None, reset_password_token, **kwargs):
-    # send an e-mail to the user
 
     msg = EmailMultiAlternatives(
-        # title:
         f"Password Reset Token for {reset_password_token.user}",
-        # message:
         reset_password_token.key,
-        # from:
         settings.EMAIL_HOST_USER,
-        # to:
         [reset_password_token.user.email]
     )
     msg.send()
