@@ -1,0 +1,63 @@
+`templates/email/password_reset.html`:
+    &lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Сброс пароля&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;p&gt;Здравствуйте, {{ user.first_name|default:"Пользователь" }}!&lt;/p&gt;
+        &lt;p&gt;Вы запросили сброс пароля для вашего аккаунта.&lt;/p&gt;
+        &lt;p&gt;Пожалуйста, перейдите по следующей ссылке, чтобы установить новый пароль:&lt;/p&gt;
+        &lt;p&gt;&lt;a href="{{ reset_link }}"&gt;Сбросить пароль&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Если ссылка не работает, скопируйте и вставьте в браузер: {{ reset_link }}&lt;/p&gt;
+        &lt;p&gt;Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.&lt;/p&gt;
+        &lt;p&gt;С уважением,&lt;br&gt;Ваша команда {{ settings.APP_NAME|default:"Нашего приложения" }}&lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+
+ `templates/email/user_activation.html`:
+    &lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Активация аккаунта&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;p&gt;Здравствуйте, {{ user.first_name|default:"Пользователь" }}!&lt;/p&gt;
+        &lt;p&gt;Спасибо за регистрацию на нашем сайте.&lt;/p&gt;
+        &lt;p&gt;Пожалуйста, подтвердите ваш адрес электронной почты, перейдя по следующей ссылке:&lt;/p&gt;
+        &lt;p&gt;&lt;a href="{{ activation_link }}"&gt;Активировать аккаунт&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Если ссылка не работает, скопируйте и вставьте в браузер: {{ activation_link }}&lt;/p&gt;
+        &lt;p&gt;Если вы не регистрировались на нашем сайте, просто проигнорируйте это письмо.&lt;/p&gt;
+        &lt;p&gt;С уважением,&lt;br&gt;Ваша команда {{ settings.APP_NAME|default:"Нашего приложения" }}&lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+
+`templates/email/new_order.html`:
+    &lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Ваш заказ сформирован&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;p&gt;Здравствуйте, {{user.first_name|default:"Пользователь" }}!&lt;/p&gt;
+        &lt;p&gt;Ваш заказ {{ order.id|default:"" }} успешно сформирован и принят в обработку.&lt;/p&gt;
+        &lt;p&gt;{{ status_message }}&lt;/p&gt;
+        {% if order %}
+            &lt;h3&gt;Детали заказа №{{ order.id }}&lt;/h3&gt;
+            &lt;p&gt;&lt;strong&gt;Дата заказа:&lt;/strong&gt; {{ order.dt|date:"d.m.Y H:i" }}&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Общая сумма:&lt;/strong&gt; {{ order.total_sum }}&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Статус:&lt;/strong&gt; {{ order.get_state_display }}&lt;/p&gt;
+            &lt;p&gt;&lt;strong&gt;Адрес доставки:&lt;/strong&gt; {{ order.contact.city }}, {{ order.contact.street }}, {{ order.contact.house }}&lt;/p&gt;
+            {# Если вы хотите показать список товаров в письме #}
+            {# &lt;ul&gt;
+                {% for item in order.ordered_items.all %}
+                    &lt;li&gt;{{ item.product_info.product.name }} ({{ item.quantity }} шт.) - {{ item.price_at_order }}&lt;/li&gt;
+                {% endfor %}
+            &lt;/ul&gt; #}
+        {% endif %}
+        &lt;p&gt;Вы можете отслеживать статус вашего заказа и просматривать детали в личном кабинете:&lt;/p&gt;
+        &lt;p&gt;&lt;a href="{{ order_detail_url }}"&gt;Просмотреть детали заказа&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Спасибо за покупку!&lt;/p&gt;
+        &lt;p&gt;С уважением,&lt;br&gt;Ваша команда {{ settings.APP_NAME|default:"Нашего приложения" }}&lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;

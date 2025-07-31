@@ -4,6 +4,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_rest_passwordreset.tokens import get_token_generator
+username_validator = UnicodeUsernameValidator()
 
 STATE_CHOICES = (
     ('basket', 'Статус корзины'),
@@ -23,10 +24,11 @@ USER_TYPE_CHOICES = (
 
 
 class UserManager(BaseUserManager):
+    use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
         if not email:
-            raise ValueError('The given email must be set')
+            raise ValueError('Email должен быть указан')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -34,13 +36,13 @@ class UserManager(BaseUserManager):
         return user
 
 
-def create_user(self, email, password, **extra_fields):
+    def create_user(self, email, password, **extra_fields):
     extra_fields.setdefault('is_staff', False)
     extra_fields.setdefault('is_superuser', False)
     return self._create_user(email, password, **extra_fields)
 
 
-def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email, password, **extra_fields):
     extra_fields.setdefault('is_staff', True)
     extra_fields.setdefault('is_superuser', True)
     extra_fields.setdefault('is_active', True)
@@ -56,52 +58,48 @@ def create_superuser(self, email, password, **extra_fields):
 
 
 class User(AbstractUser):
-    REQUIRED_FIELDS = []
     email = models.EmailField(_('email address'), unique=True, db_index=True)
-    company = models.CharField(verbose_name='Компания', max_length=150, blank=True)
-    position = models.CharField(verbose_name='Должность', max_length=150, blank=True)
-    username_validator = UnicodeUsernameValidator()
     username = models.CharField('username', max_length=150,
-                                help_text=_('Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'),
+
                                 validators=[username_validator],
                                 error_messages={
                                     'unique': _("A user with that username already exists."),
                                 },
                                 )
+
+    is_active = models.BooleanField(
+        _('active'),
+        default = False,
+        help_text = _('Designates whether this user should be treated as active. '
+                    'Unselect this instead of deleting accounts.'),
+    )
+    company = models.CharField(verbose_name='Компания', max_length=150, blank=True, null=True)  # Добавил null=True
+    position = models.CharField(verbose_name='Должность', max_length=150, blank=True, null=True)
+    user_type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5,
+                                 default='buyer')
+
     objects = UserManager()
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
-    is_active = models.BooleanField('active'),
-    default = False,
-    help_text = _(
-        'Designates whether this user should be treated as active. '
-        'Unselect this instead of deleting accounts.'
-    ),
+    def __str__(self):
+        return f'{self.first_name} {self.last_name} ({self.email})'
 
-)
-type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5, default='buyer')
-
-
-def __str__(self):
-    return f'{self.first_name} {self.last_name}'
-
-
-class Meta:
-    verbose_name = 'Пользователь'
-    verbose_name_plural = "Список пользователей"
-    ordering = ('email',)
-
+    class Meta(AbstractUser.Meta):
+        verbose_name = 'Пользователь'
+        verbose_name_plural = "Список пользователей"
+        ordering = ('email',)
 
 class Shop(models.Model):
     name = models.CharField(max_length=50,
-                            verbose_name='Название')
+verbose_name='Название')
     url = models.URLField(verbose_name='Ссылка',
                           null=True,
                           blank=True)
     user = models.OneToOneField(User, verbose_name='Пользователь',
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
-    state = models.BooleanField(verbose_name='статус получения заказов',
+    state = models.BooleanField(verbose_name='статус получения заказов', default=True)
 
     class Meta:
         verbose_name = 'Магазин'
@@ -165,33 +163,33 @@ class ProductInfo(models.Model):
         ]
 
 class Parameter(models.Model):
-    name = models.CharField(
-        max_length=40, verbose_name='Название')
+    name = models.CharField(max_length=40, verbose_name='Название характеристики')
+
+    def __str__(self):
+        return self.name
 
     class Meta:
-        verbose_name = 'Имя параметра'
-        verbose_name_plural = "Список имен параметров"
-        ordering = ('-name',)
+        verbose_name = 'Характеристика товара (Параметр)'
+        verbose_name_plural = 'Характеристики товаров (Параметры)'
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
 class ProductParameter(models.Model):
-    product_info = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте',
-                                     related_name='product_parameters', blank=True,
-                                     on_delete=models.CASCADE
-                                     )
-    parameter = models.ForeignKey(Parameter, verbose_name='Параметр', related_name='product_parameters', blank=True,
-                                  on_delete=models.CASCADE
-                                  )
-    value = models.CharField(verbose_name='Значение', max_length=100)
+    product_info = models.ForeignKey(ProductInfo, on_delete=models.CASCADE, related_name='parameters',
+                                     verbose_name='Информация о товаре')
+    parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE,
+                                  verbose_name='Характеристика')  # Ссылка на Parameter
+    value = models.CharField(max_length=255, verbose_name='Значение')
+
+    def __str__(self):
+        return f'{self.product_info.name} - {self.parameter.name}: {self.value}'
 
     class Meta:
-        verbose_name = 'Параметр'
-        verbose_name_plural = "Список параметров"
+        verbose_name = 'Значение характеристики товара'
+        verbose_name_plural = 'Значения характеристик товаров'
         constraints = [
-            models.UniqueConstraint(
-                fields=['product_info', 'parameter'],
-                name='unique_product_parameter'),
+            models.UniqueConstraint(fields=['product_info', 'parameter'], name='unique_product_parameter_value')
         ]
 
 

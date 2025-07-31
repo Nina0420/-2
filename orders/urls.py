@@ -13,12 +13,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path ПРОВЕРИТЬ!!!!!
+from django.urls import path, include
+from django.conf import settings
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('backend.urls')),
-    path('__debug__/', include('debug_toolbar.urls')),
+    path("admin/", admin.site.urls),
+    path("api/", include("backend.urls")),
 ]
-urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+if settings.DEBUG:
+    # Django Debug Toolbar
+    urlpatterns += [
+        path("debug/", include("debug_toolbar.urls")),
+    ]
+    # Django Silk Profiler
+    urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
+urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]

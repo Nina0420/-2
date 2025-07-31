@@ -1,25 +1,26 @@
 from backend.views import (UserActivateView, BasketView, BuyerOrderView,
-                           CategoryView, ContactView, ListProductView,
-                           OrderConfirmView, OrderShopView, ProductView,
-                           UserRegisterView, ShopView, UserView)
-from django.urls import path
-from rest_framework.authtoken import views
+                           CategoryView, ContactView, ProductViewSet
+                           OrderConfirmView, OrderShopView,
+)                           UserRegisterView, ShopView, UserView,
+from django.urls import path, include
+from rest_framework.authtoken import views as auth_views
 from rest_framework.routers import DefaultRouter
 
+
 router = DefaultRouter()
-router.register('orders', BuyerOrderView, basename='orders')
-router.register('products', ListProductView, basename='products')
-router.register('product', ProductView, basename='product')
-router.register('shops', ShopView, basename='shops')
-router.register('orders_shop', OrderShopView, basename='orders_shop')
-router.register('contacts', ContactView, basename='contacts')
-router.register('category', CategoryView, basename='category')
-router.register('basket', BasketView, basename='basket')
+router.register('products', ProductViewSet, basename='products')
 
 urlpatterns = [
     path('user/', UserView.as_view(), name='user'),
     path('register/', UserRegisterView.as_view(), name='register'),
-    path('activation/<int:id>/<str:token>', UserActivateView.as_view(), name='activation'),
-    path('order_new', OrderConfirmView.as_view(), name='order_new'),
-    path('get-token/', views.obtain_auth_token),
-] + router.urls
+    path('activation/<int:id>/<str:token>;/', UserActivateView.as_view(), name='activation'),
+    path('order_new/', OrderConfirmView.as_view(), name='order_new'),
+    path('get-token/', auth_views.obtain_auth_token),
+    path('basket/', BasketView.as_view(), name='basket'),
+    path('shops/', ShopView.as_view(), name='shop-list'),
+    path('orders shop/', OrderShopView.as_view(), name='order-shop-list'),
+    path('contacts/', ContactView.as_view(), name='contact-list'),
+    path('categories/', CategoryView.as_view(), name='category-list'),
+
+]
+urlpatterns + router.urls
